@@ -1,19 +1,16 @@
-FROM node:24-alpine
-
-# Create app user and group
-RUN addgroup app && adduser -S -G app app
-
+# Dockerfile
+FROM node:18-alpine
 WORKDIR /usr/src/app
 
-# Copy package files and install dependencies as root
+# only copy manifests first (better cache)
 COPY package*.json ./
-RUN npm ci --omit=dev
 
-# Copy rest of the app
+# Install ALL deps, including dev (mocha, chai, etc.)
+RUN npm ci --include=dev
+
+# now copy the rest of the app
 COPY . .
 
-# Switch to non-root user for runtime
-USER app
-
+ENV PORT=3000
 EXPOSE 3000
-CMD ["node", "app.js"]
+CMD ["npm", "start"]
